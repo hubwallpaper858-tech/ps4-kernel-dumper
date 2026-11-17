@@ -94,6 +94,15 @@ int _main(struct thread *td) {
   get_firmware_string(fw_version);
   uint64_t kernel_base = get_kernel_base();
 
+  // 14.02 safety: if kexec didn't deliver a real kernel base (e.g. the kpayload
+  // never ran in ring0, or its args pointer wasn't passed), do NOT continue to
+  // compute a bogus multi-GB size and spin forever. Report and quit instead.
+  if ((kernel_base >> 32) != 0xFFFFFFFFull) {
+    printf_notification("Kernel base invalid: 0x%lx\nkexec unavailable on %s. Aborting (no freeze).", kernel_base, fw_version);
+    return 0;
+  }
+  printf_notification("Kernel base OK: 0x%lx (%s)", kernel_base, fw_version);
+
   ScePthread nthread;
   memset_s(&nthread, sizeof(ScePthread), 0, sizeof(ScePthread));
   scePthreadCreate(&nthread, NULL, nthread_func, NULL, "nthread");
@@ -128,6 +137,13 @@ int _main(struct thread *td) {
   printf_notification("USB device detected.\n\nStarting kernel dumping to %s.", usb_name);
 
   uint64_t kernel_size = get_kernel_size(kernel_base);
+  // 14.02 safety: the in-memory ELF header may not be intact, giving a wild
+  // size that would make the loop run for hours (the "freeze"). Cap it so the
+  // dump always finishes; 48 MB covers the ~20 MB PS4 kernel with margin.
+  if (kernel_size == 0 || kernel_size > 0x3000000) {
+    printf_notification("Kernel size 0x%lx looks wrong; capping to 48 MB.", kernel_size);
+    kernel_size = 0x3000000;
+  }
   uint64_t num_of_kernel_chunks = (kernel_size + (KERNEL_CHUNK_SIZE / 2)) / KERNEL_CHUNK_SIZE;
 
   printf_debug("Kernel Size: %lu bytes\n", kernel_size);

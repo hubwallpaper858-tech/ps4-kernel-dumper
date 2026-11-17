@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-11-18
+
+### Added
+- Firmware 14.02 (build `J02700521`) support.
+- Anti-freeze guards in `source/main.c`: validate the kernel base returned by `kexec`
+  and cap the dump size at 48 MB so a bad base/size can no longer spin the console.
+
 ##  [1.0.0] - 2021-01-01
 
 ### Added
