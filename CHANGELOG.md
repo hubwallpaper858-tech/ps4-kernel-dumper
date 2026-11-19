@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-11-19
+
+### Added
+- Documented support for every firmware the Payload SDK has offsets for (9.00 - 14.02),
+  including **12.52**. The dumper code was already firmware-agnostic; `meta.json`
+  previously labelled it 14.02-only, which could cause payload loaders to reject it.
+- Verified-firmware table in README.
+
+### Changed
+- Title and firmware field reflect multi-firmware support rather than "14.02 only".
+- Anti-freeze guards from 1.1.0 clarified as universal, not 14.02-specific.
+
 ## [1.1.0] - 2026-11-18
 
 ### Added
